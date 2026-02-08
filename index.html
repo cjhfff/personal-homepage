@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>首页 - 个人博客</title>
+  <meta name="description" content="记录学习经历与个人成长的博客">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Serif+SC:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Page Loader -->
+  <div class="page-loader">
+    <div class="loader-dot"></div>
+    <div class="loader-dot"></div>
+    <div class="loader-dot"></div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__logo">Blog.</a>
+      <div class="nav__links">
+        <a href="index.html" class="nav__link nav__link--active">首页</a>
+        <a href="blog.html" class="nav__link">博客</a>
+        <a href="projects.html" class="nav__link">项目</a>
+        <a href="about.html" class="nav__link">关于</a>
+        <button class="theme-toggle" aria-label="切换主题">🌙</button>
+      </div>
+      <div class="nav__hamburger" aria-label="菜单">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu">
+    <a href="index.html">首页</a>
+    <a href="blog.html">博客</a>
+    <a href="projects.html">项目</a>
+    <a href="about.html">关于</a>
+    <button class="theme-toggle" aria-label="切换主题">🌙</button>
+  </div>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <canvas class="hero__canvas"></canvas>
+    <div class="hero__content">
+      <p class="hero__greeting">Welcome to my blog</p>
+      <h1 class="hero__title">你好，我是<span>开发者</span></h1>
+      <div class="hero__typing">
+        <span class="hero__typing-text" data-strings='["热爱编程，记录成长", "探索技术，分享知识", "保持好奇，持续学习", "用代码创造价值"]'></span>
+        <span class="cursor"></span>
+      </div>
+      <div class="hero__cta">
+        <a href="blog.html" class="btn btn--primary">阅读博客 &rarr;</a>
+        <a href="about.html" class="btn btn--outline">了解更多</a>
+      </div>
+    </div>
+    <div class="hero__scroll">
+      <div class="hero__scroll-icon"></div>
+    </div>
+  </section>
+
+  <!-- Featured Articles -->
+  <section class="section" style="position: relative;">
+    <div class="gradient-blob gradient-blob--1"></div>
+    <div class="gradient-blob gradient-blob--2"></div>
+    <div class="container">
+      <div class="section__header reveal">
+        <p class="section__label">Latest Posts</p>
+        <h2 class="section__title">精选文章</h2>
+        <p class="section__desc">最新的学习笔记与技术分享</p>
+      </div>
+      <!-- 精选文章（由 JS 自动从 data/articles.js 读取 featured=true 的文章生成） -->
+      <div class="featured-grid stagger-children" id="featured-grid">
+      </div>
+      <div class="text-center mt-4 reveal">
+        <a href="blog.html" class="btn btn--outline">查看全部文章 &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Skills Section -->
+  <section class="section" style="background: var(--bg-secondary);">
+    <div class="container">
+      <div class="section__header reveal">
+        <p class="section__label">Skills</p>
+        <h2 class="section__title">技能标签</h2>
+        <p class="section__desc">不断学习，持续进步</p>
+      </div>
+      <div class="skills-cloud reveal">
+        <span class="skill-tag skill-tag--lg">JavaScript</span>
+        <span class="skill-tag">TypeScript</span>
+        <span class="skill-tag skill-tag--lg">React</span>
+        <span class="skill-tag">Vue.js</span>
+        <span class="skill-tag skill-tag--sm">Node.js</span>
+        <span class="skill-tag">HTML5</span>
+        <span class="skill-tag skill-tag--lg">CSS3</span>
+        <span class="skill-tag skill-tag--sm">Python</span>
+        <span class="skill-tag">Git</span>
+        <span class="skill-tag skill-tag--lg">数据结构</span>
+        <span class="skill-tag skill-tag--sm">算法</span>
+        <span class="skill-tag">Docker</span>
+        <span class="skill-tag skill-tag--sm">Linux</span>
+        <span class="skill-tag">Webpack</span>
+        <span class="skill-tag skill-tag--lg">SQL</span>
+        <span class="skill-tag">MongoDB</span>
+        <span class="skill-tag skill-tag--sm">Redis</span>
+        <span class="skill-tag">RESTful API</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="section">
+    <div class="container">
+      <div class="text-center reveal">
+        <h2 class="section__title">一起交流学习</h2>
+        <p class="section__desc mb-3">如果你也热爱技术，欢迎一起探讨交流</p>
+        <a href="about.html" class="btn btn--primary">联系我 &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__inner">
+        <p class="footer__text">&copy; 2025 Blog. All rights reserved.</p>
+        <div class="footer__links">
+          <a href="index.html" class="footer__link">首页</a>
+          <a href="blog.html" class="footer__link">博客</a>
+          <a href="projects.html" class="footer__link">项目</a>
+          <a href="about.html" class="footer__link">关于</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Back to Top -->
+  <button class="back-to-top" aria-label="返回顶部">&uarr;</button>
+
+  <!-- 先加载文章数据，再加载主脚本 -->
+  <script src="data/articles.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

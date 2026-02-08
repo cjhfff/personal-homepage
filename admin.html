@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文章管理 - 写文章</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #f8f9fa;
+      --bg-card: #ffffff;
+      --bg-sidebar: #ffffff;
+      --text: #1a1a2e;
+      --text-secondary: #666;
+      --border: #e8e8e8;
+      --primary: #6c5ce7;
+      --primary-light: #a29bfe;
+      --danger: #e74c3c;
+      --success: #27ae60;
+      --radius: 12px;
+      --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+
+    body {
+      font-family: 'Inter', 'Noto Serif SC', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ===== Top Bar ===== */
+    .topbar {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .topbar__left { display: flex; align-items: center; gap: 16px; }
+    .topbar__logo { font-size: 18px; font-weight: 700; color: var(--primary); text-decoration: none; }
+    .topbar__divider { width: 1px; height: 24px; background: var(--border); }
+    .topbar__title { font-size: 14px; color: var(--text-secondary); }
+    .topbar__actions { display: flex; gap: 10px; }
+    .topbar__link {
+      font-size: 13px; color: var(--text-secondary); text-decoration: none;
+      padding: 6px 12px; border-radius: 6px; transition: all 0.2s;
+    }
+    .topbar__link:hover { background: var(--bg); color: var(--primary); }
+
+    /* ===== Layout ===== */
+    .layout { display: flex; height: calc(100vh - 56px); }
+
+    /* ===== Sidebar ===== */
+    .sidebar {
+      width: 280px;
+      background: var(--bg-card);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    .sidebar__header {
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .sidebar__title { font-size: 14px; font-weight: 600; }
+    .sidebar__count { font-size: 12px; color: var(--text-secondary); background: var(--bg); padding: 2px 8px; border-radius: 10px; }
+    .sidebar__list { flex: 1; overflow-y: auto; padding: 8px; }
+    .sidebar__item {
+      padding: 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+      margin-bottom: 4px;
+      border: 2px solid transparent;
+    }
+    .sidebar__item:hover { background: var(--bg); }
+    .sidebar__item--active { background: #f0eeff; border-color: var(--primary); }
+    .sidebar__item-title {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .sidebar__item-meta { font-size: 12px; color: var(--text-secondary); display: flex; gap: 8px; }
+    .sidebar__item-category {
+      font-size: 11px;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: var(--bg);
+      color: var(--primary);
+    }
+    .sidebar__footer { padding: 12px; border-top: 1px solid var(--border); }
+    .btn-new {
+      width: 100%;
+      padding: 10px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-new:hover { background: #5b4bd5; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(108,92,231,0.3); }
+
+    /* ===== Main Editor ===== */
+    .editor-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Settings Bar */
+    .settings-bar {
+      padding: 16px 24px;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .setting-group { display: flex; align-items: center; gap: 8px; }
+    .setting-label { font-size: 12px; color: var(--text-secondary); font-weight: 500; white-space: nowrap; }
+    .setting-select, .setting-input {
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: inherit;
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .setting-select:focus, .setting-input:focus { border-color: var(--primary); }
+    .setting-input--tags { width: 200px; }
+    .setting-input--emoji { width: 50px; text-align: center; font-size: 18px; }
+    .setting-color {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .setting-color:hover, .setting-color--active { border-color: var(--text); transform: scale(1.15); }
+    .color-picker { display: flex; gap: 6px; align-items: center; }
+    .switch-group { display: flex; align-items: center; gap: 6px; }
+    .switch {
+      width: 36px; height: 20px;
+      background: #ccc;
+      border-radius: 10px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+      border: none;
+    }
+    .switch::after {
+      content: '';
+      width: 16px; height: 16px;
+      background: #fff;
+      border-radius: 50%;
+      position: absolute;
+      top: 2px; left: 2px;
+      transition: transform 0.2s;
+    }
+    .switch--on { background: var(--primary); }
+    .switch--on::after { transform: translateX(16px); }
+
+    /* Title Input */
+    .title-input {
+      border: none;
+      outline: none;
+      font-size: 28px;
+      font-weight: 700;
+      padding: 24px 32px 8px;
+      background: transparent;
+      font-family: inherit;
+      color: var(--text);
+      width: 100%;
+    }
+    .title-input::placeholder { color: #ccc; }
+
+    /* Toolbar */
+    .toolbar {
+      padding: 8px 32px;
+      display: flex;
+      gap: 2px;
+      flex-wrap: wrap;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-card);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .toolbar__btn {
+      padding: 6px 10px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      transition: all 0.15s;
+      line-height: 1;
+    }
+    .toolbar__btn:hover { background: var(--bg); color: var(--text); }
+    .toolbar__btn--active { background: #f0eeff; color: var(--primary); }
+    .toolbar__sep { width: 1px; background: var(--border); margin: 2px 6px; }
+
+    /* Rich Text Editor */
+    .editor-scroll { flex: 1; min-height: 0; overflow-y: auto; background: var(--bg-card); }
+    .rich-editor {
+      min-height: 400px;
+      padding: 16px 32px 100px;
+      outline: none;
+      font-size: 16px;
+      line-height: 1.8;
+      color: var(--text);
+      max-width: 800px;
+    }
+    .rich-editor:empty::before {
+      content: '开始写你的文章...';
+      color: #ccc;
+      pointer-events: none;
+    }
+    .rich-editor h2 { font-size: 22px; margin: 24px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+    .rich-editor h3 { font-size: 18px; margin: 20px 0 8px; }
+    .rich-editor p { margin-bottom: 12px; }
+    .rich-editor blockquote {
+      border-left: 4px solid var(--primary);
+      padding: 12px 16px;
+      margin: 16px 0;
+      background: #f8f7ff;
+      border-radius: 0 8px 8px 0;
+      color: var(--text-secondary);
+    }
+    .rich-editor ul, .rich-editor ol { margin: 12px 0; padding-left: 24px; }
+    .rich-editor li { margin-bottom: 4px; }
+    .rich-editor pre {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 16px;
+      border-radius: 8px;
+      margin: 16px 0;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+    }
+    .rich-editor code {
+      background: #f0eeff;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: var(--primary);
+    }
+    .rich-editor pre code { background: none; padding: 0; color: inherit; }
+    .rich-editor img { max-width: 100%; border-radius: 8px; margin: 12px 0; }
+
+    /* Action Buttons */
+    .action-bar {
+      padding: 12px 24px;
+      background: var(--bg-card);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 20;
+    }
+    .action-bar__left { display: flex; gap: 8px; }
+    .action-bar__right { display: flex; gap: 8px; }
+    .btn {
+      padding: 8px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .btn--primary { background: var(--primary); color: #fff; }
+    .btn--primary:hover { background: #5b4bd5; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(108,92,231,0.3); }
+    .btn--danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+    .btn--danger:hover { background: var(--danger); color: #fff; }
+    .btn--ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
+    .btn--ghost:hover { background: var(--bg); color: var(--text); }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      top: 72px;
+      right: 24px;
+      padding: 12px 20px;
+      background: var(--success);
+      color: #fff;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 9999;
+      transform: translateX(120%);
+      transition: transform 0.3s ease;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    .toast--show { transform: translateX(0); }
+    .toast--error { background: var(--danger); }
+
+    /* Empty State */
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+    }
+    .empty-state__icon { font-size: 64px; margin-bottom: 16px; opacity: 0.5; }
+    .empty-state__text { font-size: 16px; margin-bottom: 24px; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar { width: 100%; position: fixed; top: 56px; left: -100%; z-index: 50; height: calc(100vh - 56px); transition: left 0.3s; }
+      .sidebar--open { left: 0; }
+      .settings-bar { padding: 12px 16px; }
+      .title-input { padding: 16px; font-size: 22px; }
+      .toolbar { padding: 8px 16px; }
+      .rich-editor { padding: 16px; }
+      .mobile-toggle { display: block !important; }
+    }
+    .mobile-toggle { display: none; background: none; border: none; font-size: 20px; cursor: pointer; padding: 4px 8px; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="topbar">
+    <div class="topbar__left">
+      <button class="mobile-toggle" onclick="toggleSidebar()">&#9776;</button>
+      <a href="index.html" class="topbar__logo">Blog.</a>
+      <div class="topbar__divider"></div>
+      <span class="topbar__title">文章管理</span>
+    </div>
+    <div class="topbar__actions">
+      <a href="index.html" class="topbar__link">&#127968; 首页</a>
+      <a href="blog.html" class="topbar__link">&#128221; 博客</a>
+    </div>
+  </div>
+
+  <!-- Layout -->
+  <div class="layout">
+    <!-- Sidebar: Article List -->
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar__header">
+        <span class="sidebar__title">全部文章</span>
+        <span class="sidebar__count" id="article-count">0 篇</span>
+      </div>
+      <div class="sidebar__list" id="article-list">
+        <!-- 由 JS 生成 -->
+      </div>
+      <div class="sidebar__footer">
+        <button class="btn-new" onclick="createNew()">+ 写新文章</button>
+      </div>
+    </div>
+
+    <!-- Editor Area -->
+    <div class="editor-area" id="editor-area">
+      <div class="empty-state" id="empty-state">
+        <div class="empty-state__icon">&#9997;&#65039;</div>
+        <div class="empty-state__text">选择一篇文章编辑，或者写一篇新的</div>
+        <button class="btn btn--primary" onclick="createNew()">+ 写新文章</button>
+      </div>
+
+      <!-- Editor (hidden by default) -->
+      <div id="editor-wrapper" style="display:none; flex:1; flex-direction:column; overflow:hidden;">
+        <!-- Settings -->
+        <div class="settings-bar">
+          <div class="setting-group">
+            <span class="setting-label">分类</span>
+            <select class="setting-select" id="ed-category">
+              <option value="frontend">前端开发</option>
+              <option value="backend">后端技术</option>
+              <option value="learning">学习方法</option>
+              <option value="life">生活随笔</option>
+            </select>
+          </div>
+          <div class="setting-group">
+            <span class="setting-label">标签</span>
+            <input type="text" class="setting-input setting-input--tags" id="ed-tags" placeholder="用逗号分隔，如：HTML, CSS">
+          </div>
+          <div class="setting-group">
+            <span class="setting-label">图标</span>
+            <input type="text" class="setting-input setting-input--emoji" id="ed-emoji" value="📝">
+          </div>
+          <div class="setting-group">
+            <span class="setting-label">卡片颜色</span>
+            <div class="color-picker" id="color-picker">
+              <div class="setting-color setting-color--active" data-gradient="linear-gradient(135deg, #6c5ce7, #a29bfe)" style="background:linear-gradient(135deg,#6c5ce7,#a29bfe)"></div>
+              <div class="setting-color" data-gradient="linear-gradient(135deg, #fd79a8, #e17055)" style="background:linear-gradient(135deg,#fd79a8,#e17055)"></div>
+              <div class="setting-color" data-gradient="linear-gradient(135deg, #00cec9, #0984e3)" style="background:linear-gradient(135deg,#00cec9,#0984e3)"></div>
+              <div class="setting-color" data-gradient="linear-gradient(135deg, #55efc4, #00b894)" style="background:linear-gradient(135deg,#55efc4,#00b894)"></div>
+              <div class="setting-color" data-gradient="linear-gradient(135deg, #e17055, #fdcb6e)" style="background:linear-gradient(135deg,#e17055,#fdcb6e)"></div>
+              <div class="setting-color" data-gradient="linear-gradient(135deg, #0984e3, #74b9ff)" style="background:linear-gradient(135deg,#0984e3,#74b9ff)"></div>
+            </div>
+          </div>
+          <div class="switch-group">
+            <span class="setting-label">首页推荐</span>
+            <button class="switch" id="ed-featured" onclick="toggleSwitch(this)"></button>
+          </div>
+        </div>
+
+        <!-- Title -->
+        <input type="text" class="title-input" id="ed-title" placeholder="输入文章标题...">
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+          <button class="toolbar__btn" onclick="fmt('formatBlock','h2')" title="标题">H2</button>
+          <button class="toolbar__btn" onclick="fmt('formatBlock','h3')" title="小标题">H3</button>
+          <button class="toolbar__btn" onclick="fmt('formatBlock','p')" title="正文">P</button>
+          <div class="toolbar__sep"></div>
+          <button class="toolbar__btn" onclick="fmt('bold')" title="加粗"><b>B</b></button>
+          <button class="toolbar__btn" onclick="fmt('italic')" title="斜体"><i>I</i></button>
+          <button class="toolbar__btn" onclick="fmt('strikeThrough')" title="删除线"><s>S</s></button>
+          <div class="toolbar__sep"></div>
+          <button class="toolbar__btn" onclick="fmt('insertUnorderedList')" title="无序列表">&#8226; 列表</button>
+          <button class="toolbar__btn" onclick="fmt('insertOrderedList')" title="有序列表">1. 列表</button>
+          <div class="toolbar__sep"></div>
+          <button class="toolbar__btn" onclick="insertBlockquote()" title="引用">&#10077; 引用</button>
+          <button class="toolbar__btn" onclick="insertCode()" title="代码块">&#60;/&#62; 代码</button>
+          <button class="toolbar__btn" onclick="insertInlineCode()" title="行内代码">`代码`</button>
+          <div class="toolbar__sep"></div>
+          <button class="toolbar__btn" onclick="fmt('undo')" title="撤销">&#8617; 撤销</button>
+          <button class="toolbar__btn" onclick="fmt('redo')" title="重做">&#8618; 重做</button>
+        </div>
+
+        <!-- Rich Editor -->
+        <div class="editor-scroll">
+          <div class="rich-editor" id="ed-content" contenteditable="true"></div>
+        </div>
+
+        <!-- Action Bar -->
+        <div class="action-bar">
+          <div class="action-bar__left">
+            <button type="button" class="btn btn--danger" id="btn-delete">删除文章</button>
+          </div>
+          <div class="action-bar__right">
+            <button type="button" class="btn btn--ghost" onclick="previewArticle()">预览</button>
+            <button type="button" class="btn btn--primary" onclick="saveArticle()">&#10003; 发布保存</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Load default articles data -->
+  <script src="data/articles.js"></script>
+
+  <script>
+    // ===== 数据管理 =====
+    const CATEGORY_MAP = {
+      frontend: '前端开发',
+      backend: '后端技术',
+      learning: '学习方法',
+      life: '生活随笔'
+    };
+
+    const STORAGE_KEY = 'blog_articles';
+    let articles = [];
+    let currentId = null;
+
+    // 读取文章列表
+    function loadArticles() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        articles = JSON.parse(stored);
+      } else if (typeof BLOG_ARTICLES !== 'undefined') {
+        // 首次访问，从默认数据导入
+        articles = JSON.parse(JSON.stringify(BLOG_ARTICLES));
+        saveToStorage();
+      }
+    }
+
+    // 保存到 localStorage
+    function saveToStorage() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(articles));
+    }
+
+    // 获取下一个 ID
+    function getNextId() {
+      if (!articles.length) return 1;
+      return Math.max(...articles.map(a => a.id)) + 1;
+    }
+
+    // ===== 侧边栏渲染 =====
+    function renderSidebar() {
+      const list = document.getElementById('article-list');
+      const count = document.getElementById('article-count');
+      count.textContent = articles.length + ' 篇';
+
+      list.innerHTML = articles.map(a => `
+        <div class="sidebar__item ${a.id === currentId ? 'sidebar__item--active' : ''}" onclick="selectArticle(${a.id})">
+          <div class="sidebar__item-title">${a.emoji || '📝'} ${a.title || '无标题'}</div>
+          <div class="sidebar__item-meta">
+            <span class="sidebar__item-category">${a.categoryName || '未分类'}</span>
+            <span>${a.date || ''}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ===== 文章操作 =====
+    function createNew() {
+      const newArticle = {
+        id: getNextId(),
+        title: '',
+        category: 'frontend',
+        categoryName: '前端开发',
+        date: new Date().toISOString().slice(0, 10),
+        readTime: '约 5 分钟',
+        views: '0',
+        excerpt: '',
+        tags: [],
+        emoji: '📝',
+        gradient: 'linear-gradient(135deg, #6c5ce7, #a29bfe)',
+        featured: false,
+        content: ''
+      };
+      articles.unshift(newArticle);
+      saveToStorage();
+      selectArticle(newArticle.id);
+      renderSidebar();
+      showToast('新文章已创建，开始写作吧！');
+      // 移动端关闭侧边栏
+      document.getElementById('sidebar').classList.remove('sidebar--open');
+    }
+
+    function selectArticle(id) {
+      currentId = id;
+      const article = articles.find(a => a.id === id);
+      if (!article) return;
+
+      // 显示编辑器
+      document.getElementById('empty-state').style.display = 'none';
+      const wrapper = document.getElementById('editor-wrapper');
+      wrapper.style.display = 'flex';
+
+      // 填充字段
+      document.getElementById('ed-title').value = article.title || '';
+      document.getElementById('ed-category').value = article.category || 'frontend';
+      document.getElementById('ed-tags').value = (article.tags || []).join(', ');
+      document.getElementById('ed-emoji').value = article.emoji || '📝';
+      document.getElementById('ed-content').innerHTML = article.content || '';
+
+      // 颜色选择
+      document.querySelectorAll('.setting-color').forEach(el => {
+        el.classList.toggle('setting-color--active', el.dataset.gradient === article.gradient);
+      });
+
+      // 首页推荐开关
+      const sw = document.getElementById('ed-featured');
+      sw.classList.toggle('switch--on', !!article.featured);
+
+      renderSidebar();
+
+      // 移动端关闭侧边栏
+      document.getElementById('sidebar').classList.remove('sidebar--open');
+    }
+
+    function saveArticle() {
+      if (currentId === null) return;
+      const article = articles.find(a => a.id === currentId);
+      if (!article) return;
+
+      const title = document.getElementById('ed-title').value.trim();
+      const category = document.getElementById('ed-category').value;
+      const tags = document.getElementById('ed-tags').value.split(/[,，]/).map(t => t.trim()).filter(Boolean);
+      const emoji = document.getElementById('ed-emoji').value.trim() || '📝';
+      const content = document.getElementById('ed-content').innerHTML;
+      const featured = document.getElementById('ed-featured').classList.contains('switch--on');
+      const activeColor = document.querySelector('.setting-color--active');
+      const gradient = activeColor ? activeColor.dataset.gradient : article.gradient;
+
+      if (!title) {
+        showToast('请输入文章标题', true);
+        document.getElementById('ed-title').focus();
+        return;
+      }
+
+      article.title = title;
+      article.category = category;
+      article.categoryName = CATEGORY_MAP[category] || category;
+      article.tags = tags;
+      article.emoji = emoji;
+      article.content = content;
+      article.featured = featured;
+      article.gradient = gradient;
+
+      // 自动生成摘要（取正文前100个纯文字）
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = content;
+      const plainText = tempDiv.textContent || '';
+      article.excerpt = plainText.substring(0, 100).trim() + (plainText.length > 100 ? '...' : '');
+
+      // 自动估算阅读时间
+      const wordCount = plainText.length;
+      const minutes = Math.max(1, Math.ceil(wordCount / 400));
+      article.readTime = `约 ${minutes} 分钟`;
+
+      saveToStorage();
+      renderSidebar();
+      showToast('文章已保存发布！');
+    }
+
+    function deleteArticle() {
+      try {
+        var edContent = document.getElementById('ed-content');
+        if (edContent && edContent.blur) edContent.blur();
+
+        if (currentId === null) {
+          showToast('请先选择要删除的文章', true);
+          return;
+        }
+        var article = articles.find(function(a) { return a.id === currentId; });
+        if (!article) {
+          showToast('请先选择要删除的文章', true);
+          return;
+        }
+        if (!confirm('确定要删除「' + (article.title || '无标题') + '」吗？删除后不可恢复。')) return;
+
+        const deletedId = currentId;
+        articles = articles.filter(a => a.id !== deletedId);
+        currentId = null;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(articles));
+        renderSidebar();
+
+        document.getElementById('empty-state').style.display = 'flex';
+        document.getElementById('editor-wrapper').style.display = 'none';
+        showToast('文章已删除');
+      } catch (err) {
+        showToast('删除失败：' + (err.message || err), true);
+      }
+    }
+
+    function previewArticle() {
+      if (currentId === null) return;
+      // 先保存
+      saveArticle();
+      // 新窗口打开预览
+      window.open(`article.html?id=${currentId}`, '_blank');
+    }
+
+    // ===== 富文本编辑 =====
+    function fmt(command, value) {
+      document.getElementById('ed-content').focus();
+      if (command === 'formatBlock') {
+        document.execCommand('formatBlock', false, `<${value}>`);
+      } else {
+        document.execCommand(command, false, value || null);
+      }
+    }
+
+    function insertBlockquote() {
+      document.getElementById('ed-content').focus();
+      document.execCommand('formatBlock', false, '<blockquote>');
+    }
+
+    function insertCode() {
+      const editor = document.getElementById('ed-content');
+      editor.focus();
+      const selection = window.getSelection();
+      const text = selection.toString() || '// 在这里输入代码';
+      const pre = document.createElement('pre');
+      const code = document.createElement('code');
+      code.textContent = text;
+      pre.appendChild(code);
+
+      const range = selection.getRangeAt(0);
+      range.deleteContents();
+      range.insertNode(pre);
+
+      // 在 pre 后面添加一个空段落，方便继续输入
+      const p = document.createElement('p');
+      p.innerHTML = '<br>';
+      pre.parentNode.insertBefore(p, pre.nextSibling);
+
+      // 移动光标到新段落
+      const newRange = document.createRange();
+      newRange.setStart(p, 0);
+      newRange.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(newRange);
+    }
+
+    function insertInlineCode() {
+      const selection = window.getSelection();
+      const text = selection.toString() || '代码';
+      document.execCommand('insertHTML', false, `<code>${text}</code>&nbsp;`);
+    }
+
+    // ===== UI 辅助 =====
+    function toggleSwitch(el) {
+      el.classList.toggle('switch--on');
+    }
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('sidebar--open');
+    }
+
+    // 颜色选择
+    document.getElementById('color-picker').addEventListener('click', (e) => {
+      const target = e.target.closest('.setting-color');
+      if (!target) return;
+      document.querySelectorAll('.setting-color').forEach(el => el.classList.remove('setting-color--active'));
+      target.classList.add('setting-color--active');
+    });
+
+    // Toast 提示
+    function showToast(msg, isError) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = 'toast toast--show' + (isError ? ' toast--error' : '');
+      setTimeout(() => { toast.className = 'toast'; }, 2500);
+    }
+
+    // ===== 键盘快捷键 =====
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        saveArticle();
+      }
+    });
+
+    // ===== 初始化 =====
+    loadArticles();
+    renderSidebar();
+
+    // 删除按钮：用事件委托在 document 上监听，避免被遮挡、焦点或子元素拦截
+    document.addEventListener('click', function(e) {
+      var btn = e.target.closest ? e.target.closest('#btn-delete') : (e.target.id === 'btn-delete' ? e.target : null);
+      if (!btn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      deleteArticle();
+    });
+  </script>
+</body>
+</html>
