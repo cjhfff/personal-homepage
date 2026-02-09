@@ -57,8 +57,31 @@
     }
     .topbar__link:hover { background: var(--bg); color: var(--primary); }
 
+    /* ===== Tabs ===== */
+    .admin-tabs {
+      display: flex;
+      gap: 0;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+    }
+    .admin-tab {
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border: none;
+      background: none;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .admin-tab:hover { color: var(--primary); }
+    .admin-tab--active { color: var(--primary); border-bottom-color: var(--primary); }
+
     /* ===== Layout ===== */
-    .layout { display: flex; height: calc(100vh - 56px); }
+    .layout { display: flex; height: calc(100vh - 56px - 44px); }
 
     /* ===== Sidebar ===== */
     .sidebar {
@@ -306,6 +329,7 @@
     .btn--danger:hover { background: var(--danger); color: #fff; }
     .btn--ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
     .btn--ghost:hover { background: var(--bg); color: var(--text); }
+    .btn--small { padding: 4px 12px; font-size: 12px; }
 
     /* Toast Notification */
     .toast {
@@ -337,9 +361,95 @@
     .empty-state__icon { font-size: 64px; margin-bottom: 16px; opacity: 0.5; }
     .empty-state__text { font-size: 16px; margin-bottom: 24px; }
 
+    /* ===== Login Overlay ===== */
+    .login-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .login-card {
+      background: var(--bg-card);
+      border-radius: 16px;
+      padding: 40px 48px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    .login-card__icon { font-size: 48px; margin-bottom: 16px; }
+    .login-card__title { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+    .login-card__sub { font-size: 14px; color: var(--text-secondary); margin-bottom: 28px; }
+    .login-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+      margin-bottom: 10px;
+    }
+    .login-input:focus { border-color: var(--primary); }
+    .login-input.login-input--error { border-color: var(--danger); animation: shake 0.3s; }
+    .login-btn {
+      width: 100%;
+      margin-top: 4px;
+      padding: 12px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .login-btn:hover { background: #5b4bd5; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(108,92,231,0.3); }
+    .login-error { font-size: 13px; color: var(--danger); margin-top: 10px; min-height: 18px; }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
+
+    /* ===== Comments / Messages Tab ===== */
+    .tab-panel { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+    .tab-panel--active { display: flex; }
+    .data-list { flex: 1; overflow-y: auto; padding: 16px 24px; }
+    .data-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .data-item--pending { border-left: 3px solid #fdcb6e; }
+    .data-item--approved { border-left: 3px solid var(--success); }
+    .data-item__header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+    .data-item__meta { font-size: 13px; color: var(--text-secondary); }
+    .data-item__actions { display: flex; gap: 6px; }
+    .data-item__content { font-size: 14px; line-height: 1.6; }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .badge--pending { background: #fef9e7; color: #d68910; }
+    .badge--approved { background: #eafaf1; color: var(--success); }
+    .badge--unread { background: #fef9e7; color: #d68910; }
+    .badge--read { background: #f0f0f0; color: #888; }
+
     /* Responsive */
     @media (max-width: 768px) {
-      .sidebar { width: 100%; position: fixed; top: 56px; left: -100%; z-index: 50; height: calc(100vh - 56px); transition: left 0.3s; }
+      .sidebar { width: 100%; position: fixed; top: 100px; left: -100%; z-index: 50; height: calc(100vh - 100px); transition: left 0.3s; }
       .sidebar--open { left: 0; }
       .settings-bar { padding: 12px 16px; }
       .title-input { padding: 16px; font-size: 22px; }
@@ -352,6 +462,19 @@
 </head>
 <body>
 
+  <!-- Login Overlay -->
+  <div class="login-overlay" id="login-overlay">
+    <div class="login-card">
+      <div class="login-card__icon">🔐</div>
+      <div class="login-card__title">管理员登录</div>
+      <div class="login-card__sub">请使用 Supabase 账号登录</div>
+      <input type="email" class="login-input" id="login-email" placeholder="邮箱" autocomplete="email">
+      <input type="password" class="login-input" id="login-password" placeholder="密码" autocomplete="current-password">
+      <button class="login-btn" id="login-btn" onclick="submitLogin()">进入管理</button>
+      <div class="login-error" id="login-error"></div>
+    </div>
+  </div>
+
   <!-- Top Bar -->
   <div class="topbar">
     <div class="topbar__left">
@@ -363,154 +486,229 @@
     <div class="topbar__actions">
       <a href="index.html" class="topbar__link">&#127968; 首页</a>
       <a href="blog.html" class="topbar__link">&#128221; 博客</a>
+      <button class="topbar__link" onclick="logout()" style="background:none;border:none;cursor:pointer;">&#128275; 退出</button>
     </div>
   </div>
 
-  <!-- Layout -->
-  <div class="layout">
-    <!-- Sidebar: Article List -->
-    <div class="sidebar" id="sidebar">
-      <div class="sidebar__header">
-        <span class="sidebar__title">全部文章</span>
-        <span class="sidebar__count" id="article-count">0 篇</span>
-      </div>
-      <div class="sidebar__list" id="article-list">
-        <!-- 由 JS 生成 -->
-      </div>
-      <div class="sidebar__footer">
-        <button class="btn-new" onclick="createNew()">+ 写新文章</button>
-      </div>
-    </div>
+  <!-- Tabs -->
+  <div class="admin-tabs">
+    <button class="admin-tab admin-tab--active" onclick="switchTab('articles')">&#128221; 文章管理</button>
+    <button class="admin-tab" onclick="switchTab('comments')">&#128172; 评论审核</button>
+    <button class="admin-tab" onclick="switchTab('messages')">&#128140; 联系留言</button>
+  </div>
 
-    <!-- Editor Area -->
-    <div class="editor-area" id="editor-area">
-      <div class="empty-state" id="empty-state">
-        <div class="empty-state__icon">&#9997;&#65039;</div>
-        <div class="empty-state__text">选择一篇文章编辑，或者写一篇新的</div>
-        <button class="btn btn--primary" onclick="createNew()">+ 写新文章</button>
+  <!-- ===== Tab: Articles ===== -->
+  <div class="tab-panel tab-panel--active" id="tab-articles">
+    <div class="layout">
+      <!-- Sidebar: Article List -->
+      <div class="sidebar" id="sidebar">
+        <div class="sidebar__header">
+          <span class="sidebar__title">全部文章</span>
+          <span class="sidebar__count" id="article-count">0 篇</span>
+        </div>
+        <div class="sidebar__list" id="article-list">
+          <!-- 由 JS 生成 -->
+        </div>
+        <div class="sidebar__footer">
+          <button class="btn-new" onclick="createNew()">+ 写新文章</button>
+        </div>
       </div>
 
-      <!-- Editor (hidden by default) -->
-      <div id="editor-wrapper" style="display:none; flex:1; flex-direction:column; overflow:hidden;">
-        <!-- Settings -->
-        <div class="settings-bar">
-          <div class="setting-group">
-            <span class="setting-label">分类</span>
-            <select class="setting-select" id="ed-category">
-              <option value="frontend">前端开发</option>
-              <option value="backend">后端技术</option>
-              <option value="learning">学习方法</option>
-              <option value="life">生活随笔</option>
-            </select>
-          </div>
-          <div class="setting-group">
-            <span class="setting-label">标签</span>
-            <input type="text" class="setting-input setting-input--tags" id="ed-tags" placeholder="用逗号分隔，如：HTML, CSS">
-          </div>
-          <div class="setting-group">
-            <span class="setting-label">图标</span>
-            <input type="text" class="setting-input setting-input--emoji" id="ed-emoji" value="📝">
-          </div>
-          <div class="setting-group">
-            <span class="setting-label">卡片颜色</span>
-            <div class="color-picker" id="color-picker">
-              <div class="setting-color setting-color--active" data-gradient="linear-gradient(135deg, #6c5ce7, #a29bfe)" style="background:linear-gradient(135deg,#6c5ce7,#a29bfe)"></div>
-              <div class="setting-color" data-gradient="linear-gradient(135deg, #fd79a8, #e17055)" style="background:linear-gradient(135deg,#fd79a8,#e17055)"></div>
-              <div class="setting-color" data-gradient="linear-gradient(135deg, #00cec9, #0984e3)" style="background:linear-gradient(135deg,#00cec9,#0984e3)"></div>
-              <div class="setting-color" data-gradient="linear-gradient(135deg, #55efc4, #00b894)" style="background:linear-gradient(135deg,#55efc4,#00b894)"></div>
-              <div class="setting-color" data-gradient="linear-gradient(135deg, #e17055, #fdcb6e)" style="background:linear-gradient(135deg,#e17055,#fdcb6e)"></div>
-              <div class="setting-color" data-gradient="linear-gradient(135deg, #0984e3, #74b9ff)" style="background:linear-gradient(135deg,#0984e3,#74b9ff)"></div>
+      <!-- Editor Area -->
+      <div class="editor-area" id="editor-area">
+        <div class="empty-state" id="empty-state">
+          <div class="empty-state__icon">&#9997;&#65039;</div>
+          <div class="empty-state__text">选择一篇文章编辑，或者写一篇新的</div>
+          <button class="btn btn--primary" onclick="createNew()">+ 写新文章</button>
+        </div>
+
+        <!-- Editor (hidden by default) -->
+        <div id="editor-wrapper" style="display:none; flex:1; flex-direction:column; overflow:hidden;">
+          <!-- Settings -->
+          <div class="settings-bar">
+            <div class="setting-group">
+              <span class="setting-label">分类</span>
+              <select class="setting-select" id="ed-category">
+                <option value="frontend">前端开发</option>
+                <option value="backend">后端技术</option>
+                <option value="learning">学习方法</option>
+                <option value="life">生活随笔</option>
+              </select>
+            </div>
+            <div class="setting-group">
+              <span class="setting-label">标签</span>
+              <input type="text" class="setting-input setting-input--tags" id="ed-tags" placeholder="用逗号分隔，如：HTML, CSS">
+            </div>
+            <div class="setting-group">
+              <span class="setting-label">图标</span>
+              <input type="text" class="setting-input setting-input--emoji" id="ed-emoji" value="📝">
+            </div>
+            <div class="setting-group">
+              <span class="setting-label">卡片颜色</span>
+              <div class="color-picker" id="color-picker">
+                <div class="setting-color setting-color--active" data-gradient="linear-gradient(135deg, #6c5ce7, #a29bfe)" style="background:linear-gradient(135deg,#6c5ce7,#a29bfe)"></div>
+                <div class="setting-color" data-gradient="linear-gradient(135deg, #fd79a8, #e17055)" style="background:linear-gradient(135deg,#fd79a8,#e17055)"></div>
+                <div class="setting-color" data-gradient="linear-gradient(135deg, #00cec9, #0984e3)" style="background:linear-gradient(135deg,#00cec9,#0984e3)"></div>
+                <div class="setting-color" data-gradient="linear-gradient(135deg, #55efc4, #00b894)" style="background:linear-gradient(135deg,#55efc4,#00b894)"></div>
+                <div class="setting-color" data-gradient="linear-gradient(135deg, #e17055, #fdcb6e)" style="background:linear-gradient(135deg,#e17055,#fdcb6e)"></div>
+                <div class="setting-color" data-gradient="linear-gradient(135deg, #0984e3, #74b9ff)" style="background:linear-gradient(135deg,#0984e3,#74b9ff)"></div>
+              </div>
+            </div>
+            <div class="switch-group">
+              <span class="setting-label">首页推荐</span>
+              <button class="switch" id="ed-featured" onclick="toggleSwitch(this)"></button>
             </div>
           </div>
-          <div class="switch-group">
-            <span class="setting-label">首页推荐</span>
-            <button class="switch" id="ed-featured" onclick="toggleSwitch(this)"></button>
+
+          <!-- Title -->
+          <input type="text" class="title-input" id="ed-title" placeholder="输入文章标题...">
+
+          <!-- Toolbar -->
+          <div class="toolbar">
+            <button class="toolbar__btn" onclick="fmt('formatBlock','h2')" title="标题">H2</button>
+            <button class="toolbar__btn" onclick="fmt('formatBlock','h3')" title="小标题">H3</button>
+            <button class="toolbar__btn" onclick="fmt('formatBlock','p')" title="正文">P</button>
+            <div class="toolbar__sep"></div>
+            <button class="toolbar__btn" onclick="fmt('bold')" title="加粗"><b>B</b></button>
+            <button class="toolbar__btn" onclick="fmt('italic')" title="斜体"><i>I</i></button>
+            <button class="toolbar__btn" onclick="fmt('strikeThrough')" title="删除线"><s>S</s></button>
+            <div class="toolbar__sep"></div>
+            <button class="toolbar__btn" onclick="fmt('insertUnorderedList')" title="无序列表">&#8226; 列表</button>
+            <button class="toolbar__btn" onclick="fmt('insertOrderedList')" title="有序列表">1. 列表</button>
+            <div class="toolbar__sep"></div>
+            <button class="toolbar__btn" onclick="insertBlockquote()" title="引用">&#10077; 引用</button>
+            <button class="toolbar__btn" onclick="insertCode()" title="代码块">&#60;/&#62; 代码</button>
+            <button class="toolbar__btn" onclick="insertInlineCode()" title="行内代码">`代码`</button>
+            <div class="toolbar__sep"></div>
+            <button class="toolbar__btn" onclick="fmt('undo')" title="撤销">&#8617; 撤销</button>
+            <button class="toolbar__btn" onclick="fmt('redo')" title="重做">&#8618; 重做</button>
           </div>
-        </div>
 
-        <!-- Title -->
-        <input type="text" class="title-input" id="ed-title" placeholder="输入文章标题...">
-
-        <!-- Toolbar -->
-        <div class="toolbar">
-          <button class="toolbar__btn" onclick="fmt('formatBlock','h2')" title="标题">H2</button>
-          <button class="toolbar__btn" onclick="fmt('formatBlock','h3')" title="小标题">H3</button>
-          <button class="toolbar__btn" onclick="fmt('formatBlock','p')" title="正文">P</button>
-          <div class="toolbar__sep"></div>
-          <button class="toolbar__btn" onclick="fmt('bold')" title="加粗"><b>B</b></button>
-          <button class="toolbar__btn" onclick="fmt('italic')" title="斜体"><i>I</i></button>
-          <button class="toolbar__btn" onclick="fmt('strikeThrough')" title="删除线"><s>S</s></button>
-          <div class="toolbar__sep"></div>
-          <button class="toolbar__btn" onclick="fmt('insertUnorderedList')" title="无序列表">&#8226; 列表</button>
-          <button class="toolbar__btn" onclick="fmt('insertOrderedList')" title="有序列表">1. 列表</button>
-          <div class="toolbar__sep"></div>
-          <button class="toolbar__btn" onclick="insertBlockquote()" title="引用">&#10077; 引用</button>
-          <button class="toolbar__btn" onclick="insertCode()" title="代码块">&#60;/&#62; 代码</button>
-          <button class="toolbar__btn" onclick="insertInlineCode()" title="行内代码">`代码`</button>
-          <div class="toolbar__sep"></div>
-          <button class="toolbar__btn" onclick="fmt('undo')" title="撤销">&#8617; 撤销</button>
-          <button class="toolbar__btn" onclick="fmt('redo')" title="重做">&#8618; 重做</button>
-        </div>
-
-        <!-- Rich Editor -->
-        <div class="editor-scroll">
-          <div class="rich-editor" id="ed-content" contenteditable="true"></div>
-        </div>
-
-        <!-- Action Bar -->
-        <div class="action-bar">
-          <div class="action-bar__left">
-            <button type="button" class="btn btn--danger" id="btn-delete">删除文章</button>
+          <!-- Rich Editor -->
+          <div class="editor-scroll">
+            <div class="rich-editor" id="ed-content" contenteditable="true"></div>
           </div>
-          <div class="action-bar__right">
-            <button type="button" class="btn btn--ghost" onclick="previewArticle()">预览</button>
-            <button type="button" class="btn btn--primary" onclick="saveArticle()">&#10003; 发布保存</button>
+
+          <!-- Action Bar -->
+          <div class="action-bar">
+            <div class="action-bar__left">
+              <button type="button" class="btn btn--danger" id="btn-delete">删除文章</button>
+            </div>
+            <div class="action-bar__right">
+              <button type="button" class="btn btn--ghost" onclick="previewArticle()">预览</button>
+              <button type="button" class="btn btn--primary" onclick="saveArticle()">&#10003; 发布保存</button>
+            </div>
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ===== Tab: Comments ===== -->
+  <div class="tab-panel" id="tab-comments">
+    <div class="data-list" id="comments-data-list">
+      <p style="color:#888;padding:20px 0;">加载评论中...</p>
+    </div>
+  </div>
+
+  <!-- ===== Tab: Messages ===== -->
+  <div class="tab-panel" id="tab-messages">
+    <div class="data-list" id="messages-data-list">
+      <p style="color:#888;padding:20px 0;">加载留言中...</p>
     </div>
   </div>
 
   <!-- Toast -->
   <div class="toast" id="toast"></div>
 
-  <!-- Load default articles data -->
-  <script src="data/articles.js"></script>
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/api.js"></script>
 
   <script>
+    // ===== 认证 =====
+    async function submitLogin() {
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      const errEl = document.getElementById('login-error');
+      const btn = document.getElementById('login-btn');
+
+      if (!email || !password) {
+        errEl.textContent = '请输入邮箱和密码';
+        return;
+      }
+
+      btn.textContent = '登录中...';
+      btn.disabled = true;
+      try {
+        await AuthAPI.signIn(email, password);
+        document.getElementById('login-overlay').style.display = 'none';
+        initAdmin();
+      } catch (e) {
+        errEl.textContent = '登录失败：' + (e.message || '邮箱或密码错误');
+        document.getElementById('login-email').classList.add('login-input--error');
+        setTimeout(() => document.getElementById('login-email').classList.remove('login-input--error'), 400);
+      } finally {
+        btn.textContent = '进入管理';
+        btn.disabled = false;
+      }
+    }
+
+    async function logout() {
+      try { await AuthAPI.signOut(); } catch (e) {}
+      location.reload();
+    }
+
+    // 回车提交
+    document.getElementById('login-password').addEventListener('keydown', e => {
+      if (e.key === 'Enter') submitLogin();
+    });
+
+    // 检查登录状态
+    (async function checkAuth() {
+      const session = await AuthAPI.getSession();
+      if (session) {
+        document.getElementById('login-overlay').style.display = 'none';
+        initAdmin();
+      }
+    })();
+
     // ===== 数据管理 =====
-    const CATEGORY_MAP = {
+    const CATEGORY_MAP_ADMIN = {
       frontend: '前端开发',
       backend: '后端技术',
       learning: '学习方法',
       life: '生活随笔'
     };
 
-    const STORAGE_KEY = 'blog_articles';
     let articles = [];
     let currentId = null;
 
+    async function initAdmin() {
+      await loadArticles();
+      renderSidebar();
+    }
+
     // 读取文章列表
-    function loadArticles() {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        articles = JSON.parse(stored);
-      } else if (typeof BLOG_ARTICLES !== 'undefined') {
-        // 首次访问，从默认数据导入
-        articles = JSON.parse(JSON.stringify(BLOG_ARTICLES));
-        saveToStorage();
+    async function loadArticles() {
+      try {
+        articles = await ArticlesAPI.getAll();
+      } catch (e) {
+        showToast('加载文章失败: ' + e.message, true);
       }
     }
 
-    // 保存到 localStorage
-    function saveToStorage() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(articles));
-    }
+    // ===== Tab 切换 =====
+    function switchTab(tab) {
+      document.querySelectorAll('.admin-tab').forEach((t, i) => {
+        t.classList.toggle('admin-tab--active', ['articles','comments','messages'][i] === tab);
+      });
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('tab-panel--active'));
+      document.getElementById('tab-' + tab).classList.add('tab-panel--active');
 
-    // 获取下一个 ID
-    function getNextId() {
-      if (!articles.length) return 1;
-      return Math.max(...articles.map(a => a.id)) + 1;
+      if (tab === 'comments') loadCommentsAdmin();
+      if (tab === 'messages') loadMessagesAdmin();
     }
 
     // ===== 侧边栏渲染 =====
@@ -531,67 +729,64 @@
     }
 
     // ===== 文章操作 =====
-    function createNew() {
+    async function createNew() {
       const newArticle = {
-        id: getNextId(),
         title: '',
         category: 'frontend',
-        categoryName: '前端开发',
         date: new Date().toISOString().slice(0, 10),
         readTime: '约 5 分钟',
-        views: '0',
         excerpt: '',
         tags: [],
         emoji: '📝',
         gradient: 'linear-gradient(135deg, #6c5ce7, #a29bfe)',
         featured: false,
-        content: ''
+        content: '',
+        published: true
       };
-      articles.unshift(newArticle);
-      saveToStorage();
-      selectArticle(newArticle.id);
-      renderSidebar();
-      showToast('新文章已创建，开始写作吧！');
-      // 移动端关闭侧边栏
-      document.getElementById('sidebar').classList.remove('sidebar--open');
+      try {
+        const created = await ArticlesAPI.create(newArticle);
+        await loadArticles();
+        selectArticleData(created);
+        renderSidebar();
+        showToast('新文章已创建，开始写作吧！');
+        document.getElementById('sidebar').classList.remove('sidebar--open');
+      } catch (e) {
+        showToast('创建失败: ' + e.message, true);
+      }
     }
 
     function selectArticle(id) {
-      currentId = id;
       const article = articles.find(a => a.id === id);
       if (!article) return;
+      selectArticleData(article);
+    }
 
-      // 显示编辑器
+    function selectArticleData(article) {
+      currentId = article.id;
+
       document.getElementById('empty-state').style.display = 'none';
       const wrapper = document.getElementById('editor-wrapper');
       wrapper.style.display = 'flex';
 
-      // 填充字段
       document.getElementById('ed-title').value = article.title || '';
       document.getElementById('ed-category').value = article.category || 'frontend';
       document.getElementById('ed-tags').value = (article.tags || []).join(', ');
       document.getElementById('ed-emoji').value = article.emoji || '📝';
       document.getElementById('ed-content').innerHTML = article.content || '';
 
-      // 颜色选择
       document.querySelectorAll('.setting-color').forEach(el => {
         el.classList.toggle('setting-color--active', el.dataset.gradient === article.gradient);
       });
 
-      // 首页推荐开关
       const sw = document.getElementById('ed-featured');
       sw.classList.toggle('switch--on', !!article.featured);
 
       renderSidebar();
-
-      // 移动端关闭侧边栏
       document.getElementById('sidebar').classList.remove('sidebar--open');
     }
 
-    function saveArticle() {
+    async function saveArticle() {
       if (currentId === null) return;
-      const article = articles.find(a => a.id === currentId);
-      if (!article) return;
 
       const title = document.getElementById('ed-title').value.trim();
       const category = document.getElementById('ed-category').value;
@@ -600,7 +795,7 @@
       const content = document.getElementById('ed-content').innerHTML;
       const featured = document.getElementById('ed-featured').classList.contains('switch--on');
       const activeColor = document.querySelector('.setting-color--active');
-      const gradient = activeColor ? activeColor.dataset.gradient : article.gradient;
+      const gradient = activeColor ? activeColor.dataset.gradient : 'linear-gradient(135deg, #6c5ce7, #a29bfe)';
 
       if (!title) {
         showToast('请输入文章标题', true);
@@ -608,32 +803,29 @@
         return;
       }
 
-      article.title = title;
-      article.category = category;
-      article.categoryName = CATEGORY_MAP[category] || category;
-      article.tags = tags;
-      article.emoji = emoji;
-      article.content = content;
-      article.featured = featured;
-      article.gradient = gradient;
-
-      // 自动生成摘要（取正文前100个纯文字）
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = content;
       const plainText = tempDiv.textContent || '';
-      article.excerpt = plainText.substring(0, 100).trim() + (plainText.length > 100 ? '...' : '');
+      const excerpt = plainText.substring(0, 100).trim() + (plainText.length > 100 ? '...' : '');
+      const minutes = Math.max(1, Math.ceil(plainText.length / 400));
+      const readTime = '约 ' + minutes + ' 分钟';
 
-      // 自动估算阅读时间
-      const wordCount = plainText.length;
-      const minutes = Math.max(1, Math.ceil(wordCount / 400));
-      article.readTime = `约 ${minutes} 分钟`;
-
-      saveToStorage();
-      renderSidebar();
-      showToast('文章已保存发布！');
+      try {
+        await ArticlesAPI.update(currentId, {
+          title, category, tags, emoji, content, featured, gradient,
+          excerpt, readTime,
+          date: articles.find(a => a.id === currentId)?.date || new Date().toISOString().slice(0, 10),
+          published: true
+        });
+        await loadArticles();
+        renderSidebar();
+        showToast('文章已保存发布！');
+      } catch (e) {
+        showToast('保存失败: ' + e.message, true);
+      }
     }
 
-    function deleteArticle() {
+    async function deleteArticle() {
       try {
         var edContent = document.getElementById('ed-content');
         if (edContent && edContent.blur) edContent.blur();
@@ -649,33 +841,128 @@
         }
         if (!confirm('确定要删除「' + (article.title || '无标题') + '」吗？删除后不可恢复。')) return;
 
-        const deletedId = currentId;
-        articles = articles.filter(a => a.id !== deletedId);
+        await ArticlesAPI.delete(currentId);
         currentId = null;
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(articles));
+        await loadArticles();
         renderSidebar();
 
         document.getElementById('empty-state').style.display = 'flex';
         document.getElementById('editor-wrapper').style.display = 'none';
         showToast('文章已删除');
-      } catch (err) {
-        showToast('删除失败：' + (err.message || err), true);
+      } catch (e) {
+        showToast('删除失败：' + (e.message || e), true);
       }
     }
 
     function previewArticle() {
       if (currentId === null) return;
-      // 先保存
-      saveArticle();
-      // 新窗口打开预览
-      window.open(`article.html?id=${currentId}`, '_blank');
+      window.open('article.html?id=' + currentId, '_blank');
+    }
+
+    // ===== 评论管理 =====
+    async function loadCommentsAdmin() {
+      const listEl = document.getElementById('comments-data-list');
+      listEl.innerHTML = '<p style="color:#888;padding:20px 0;">加载中...</p>';
+      try {
+        const comments = await CommentsAPI.getAll();
+        if (!comments.length) {
+          listEl.innerHTML = '<p style="color:#888;padding:20px 0;">暂无评论</p>';
+          return;
+        }
+        listEl.innerHTML = comments.map(c => `
+          <div class="data-item ${c.approved ? 'data-item--approved' : 'data-item--pending'}">
+            <div class="data-item__header">
+              <div>
+                <strong>${escapeHtml(c.author_name)}</strong>
+                ${c.author_email ? '<span style="color:#888;font-size:13px;margin-left:8px;">' + escapeHtml(c.author_email) + '</span>' : ''}
+                <span class="badge ${c.approved ? 'badge--approved' : 'badge--pending'}" style="margin-left:8px;">${c.approved ? '已审核' : '待审核'}</span>
+              </div>
+              <div class="data-item__actions">
+                ${!c.approved ? '<button class="btn btn--primary btn--small" onclick="approveComment(' + c.id + ')">通过</button>' : ''}
+                <button class="btn btn--danger btn--small" onclick="deleteComment(' + c.id + ')">删除</button>
+              </div>
+            </div>
+            <div class="data-item__meta">
+              文章：${c.articles ? escapeHtml(c.articles.title) : 'ID#' + c.article_id}
+              &nbsp;·&nbsp; ${new Date(c.created_at).toLocaleString('zh-CN')}
+            </div>
+            <div class="data-item__content" style="margin-top:8px;">${escapeHtml(c.content)}</div>
+          </div>
+        `).join('');
+      } catch (e) {
+        listEl.innerHTML = '<p style="color:#e74c3c;padding:20px 0;">加载失败: ' + e.message + '</p>';
+      }
+    }
+
+    async function approveComment(id) {
+      try {
+        await CommentsAPI.approve(id);
+        showToast('评论已通过审核');
+        loadCommentsAdmin();
+      } catch (e) {
+        showToast('操作失败: ' + e.message, true);
+      }
+    }
+
+    async function deleteComment(id) {
+      if (!confirm('确定删除这条评论吗？')) return;
+      try {
+        await CommentsAPI.delete(id);
+        showToast('评论已删除');
+        loadCommentsAdmin();
+      } catch (e) {
+        showToast('删除失败: ' + e.message, true);
+      }
+    }
+
+    // ===== 留言管理 =====
+    async function loadMessagesAdmin() {
+      const listEl = document.getElementById('messages-data-list');
+      listEl.innerHTML = '<p style="color:#888;padding:20px 0;">加载中...</p>';
+      try {
+        const messages = await ContactAPI.getAll();
+        if (!messages.length) {
+          listEl.innerHTML = '<p style="color:#888;padding:20px 0;">暂无留言</p>';
+          return;
+        }
+        listEl.innerHTML = messages.map(m => `
+          <div class="data-item">
+            <div class="data-item__header">
+              <div>
+                <strong>${escapeHtml(m.name)}</strong>
+                <span style="color:#888;font-size:13px;margin-left:8px;">${escapeHtml(m.email)}</span>
+                <span class="badge ${m.read ? 'badge--read' : 'badge--unread'}" style="margin-left:8px;">${m.read ? '已读' : '未读'}</span>
+              </div>
+              <div class="data-item__actions">
+                ${!m.read ? '<button class="btn btn--ghost btn--small" onclick="markMessageRead(' + m.id + ')">标记已读</button>' : ''}
+              </div>
+            </div>
+            <div class="data-item__meta">
+              ${m.subject ? '主题：' + escapeHtml(m.subject) + ' &nbsp;·&nbsp; ' : ''}
+              ${new Date(m.created_at).toLocaleString('zh-CN')}
+            </div>
+            <div class="data-item__content" style="margin-top:8px;">${escapeHtml(m.message)}</div>
+          </div>
+        `).join('');
+      } catch (e) {
+        listEl.innerHTML = '<p style="color:#e74c3c;padding:20px 0;">加载失败: ' + e.message + '</p>';
+      }
+    }
+
+    async function markMessageRead(id) {
+      try {
+        await ContactAPI.markRead(id);
+        loadMessagesAdmin();
+      } catch (e) {
+        showToast('操作失败: ' + e.message, true);
+      }
     }
 
     // ===== 富文本编辑 =====
     function fmt(command, value) {
       document.getElementById('ed-content').focus();
       if (command === 'formatBlock') {
-        document.execCommand('formatBlock', false, `<${value}>`);
+        document.execCommand('formatBlock', false, '<' + value + '>');
       } else {
         document.execCommand(command, false, value || null);
       }
@@ -700,12 +987,10 @@
       range.deleteContents();
       range.insertNode(pre);
 
-      // 在 pre 后面添加一个空段落，方便继续输入
       const p = document.createElement('p');
       p.innerHTML = '<br>';
       pre.parentNode.insertBefore(p, pre.nextSibling);
 
-      // 移动光标到新段落
       const newRange = document.createRange();
       newRange.setStart(p, 0);
       newRange.collapse(true);
@@ -716,7 +1001,7 @@
     function insertInlineCode() {
       const selection = window.getSelection();
       const text = selection.toString() || '代码';
-      document.execCommand('insertHTML', false, `<code>${text}</code>&nbsp;`);
+      document.execCommand('insertHTML', false, '<code>' + text + '</code>&nbsp;');
     }
 
     // ===== UI 辅助 =====
@@ -726,6 +1011,10 @@
 
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('sidebar--open');
+    }
+
+    function escapeHtml(str) {
+      return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
     // 颜色选择
@@ -752,11 +1041,7 @@
       }
     });
 
-    // ===== 初始化 =====
-    loadArticles();
-    renderSidebar();
-
-    // 删除按钮：用事件委托在 document 上监听，避免被遮挡、焦点或子元素拦截
+    // 删除按钮事件委托
     document.addEventListener('click', function(e) {
       var btn = e.target.closest ? e.target.closest('#btn-delete') : (e.target.id === 'btn-delete' ? e.target : null);
       if (!btn) return;

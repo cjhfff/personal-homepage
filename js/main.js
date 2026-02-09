@@ -5,24 +5,10 @@
 (function () {
   'use strict';
 
-  // ========== 获取文章数据（优先 localStorage，回退到默认数据） ==========
-  function getArticles() {
-    // 优先从 localStorage 读取（管理后台保存在这里）
-    const stored = localStorage.getItem('blog_articles');
-    if (stored) {
-      try { return JSON.parse(stored); } catch (e) { /* 解析失败则继续 */ }
-    }
-    // 回退：从 data/articles.js 的默认数据读取
-    if (typeof BLOG_ARTICLES !== 'undefined') {
-      // 首次访问，把默认数据存入 localStorage，这样管理后台和前台数据统一
-      localStorage.setItem('blog_articles', JSON.stringify(BLOG_ARTICLES));
-      return JSON.parse(JSON.stringify(BLOG_ARTICLES));
-    }
-    return [];
-  }
-
-  // ========== Article Rendering (数据驱动) ==========
+  // ========== Article Rendering (数据驱动，从 Supabase 加载) ==========
   const ArticleRenderer = {
+    _articles: null,
+
     /**
      * 生成一张文章卡片的 HTML
      */
@@ -48,122 +34,144 @@
     /**
      * 渲染博客列表页（blog.html）
      */
-    renderBlogGrid() {
+    async renderBlogGrid() {
       const grid = document.getElementById('blog-grid');
       if (!grid) return;
 
-      const articles = getArticles();
-      grid.innerHTML = articles.map(article => this.createCardHTML(article)).join('');
+      try {
+        const articles = await ArticlesAPI.getPublished();
+        this._articles = articles;
+        grid.innerHTML = articles.map(article => this.createCardHTML(article)).join('');
+        // 重新初始化过滤功能（文章卡片是异步生成的）
+        BlogFilter.rebind();
+      } catch (e) {
+        console.error('加载文章列表失败:', e);
+      }
     },
 
     /**
      * 渲染首页精选文章（index.html）
      */
-    renderFeaturedGrid() {
+    async renderFeaturedGrid() {
       const grid = document.getElementById('featured-grid');
       if (!grid) return;
 
-      const articles = getArticles();
-      const featured = articles.filter(a => a.featured).slice(0, 3);
-      grid.innerHTML = featured.map(article => this.createCardHTML(article)).join('');
+      try {
+        const articles = await ArticlesAPI.getPublished();
+        const featured = articles.filter(a => a.featured).slice(0, 3);
+        grid.innerHTML = featured.map(article => this.createCardHTML(article)).join('');
+      } catch (e) {
+        console.error('加载精选文章失败:', e);
+      }
     },
 
     /**
      * 渲染文章详情页（article.html）
      */
-    renderArticlePage() {
+    async renderArticlePage() {
       const titleEl = document.getElementById('article-title');
       if (!titleEl) return;
-
-      const articles = getArticles();
 
       // 从 URL 参数获取文章 ID
       const params = new URLSearchParams(window.location.search);
       const id = parseInt(params.get('id'));
 
-      // 查找文章
-      const article = articles.find(a => a.id === id);
-
-      if (!article) {
-        // 如果没有 id 参数或找不到文章，默认显示第一篇
-        const fallback = articles[0];
-        if (fallback) {
-          window.location.href = `article.html?id=${fallback.id}`;
-        }
+      if (!id) {
+        // 没有 id 参数，跳转到第一篇
+        try {
+          const articles = await ArticlesAPI.getPublished();
+          if (articles[0]) window.location.href = `article.html?id=${articles[0].id}`;
+        } catch (e) { /* ignore */ }
         return;
       }
 
-      // 更新页面标题
-      document.title = `${article.title} - 个人博客`;
-      const metaDesc = document.querySelector('meta[name="description"]');
-      if (metaDesc) metaDesc.setAttribute('content', article.excerpt);
+      try {
+        const article = await ArticlesAPI.getById(id);
 
-      // 填充文章头部
-      const categoryEl = document.getElementById('article-category');
-      const metaEl = document.getElementById('article-meta');
-      const tagsEl = document.getElementById('article-tags');
-      const contentEl = document.getElementById('article-content');
+        // 增加浏览量
+        ArticlesAPI.incrementViews(id);
 
-      if (categoryEl) categoryEl.textContent = article.categoryName;
-      if (titleEl) titleEl.textContent = article.title;
+        // 更新页面标题
+        document.title = `${article.title} - 个人博客`;
+        const metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) metaDesc.setAttribute('content', article.excerpt);
 
-      if (metaEl) {
-        metaEl.innerHTML = `
-          <span class="article__meta-item">&#128197; ${article.date}</span>
-          <span class="article__meta-item">&#128338; ${article.readTime}</span>
-          <span class="article__meta-item">&#128065; ${article.views} 阅读</span>
-        `;
+        // 填充文章头部
+        const categoryEl = document.getElementById('article-category');
+        const metaEl = document.getElementById('article-meta');
+        const tagsEl = document.getElementById('article-tags');
+        const contentEl = document.getElementById('article-content');
+
+        if (categoryEl) categoryEl.textContent = article.categoryName;
+        if (titleEl) titleEl.textContent = article.title;
+
+        if (metaEl) {
+          metaEl.innerHTML = `
+            <span class="article__meta-item">&#128197; ${article.date}</span>
+            <span class="article__meta-item">&#128338; ${article.readTime}</span>
+            <span class="article__meta-item">&#128065; ${article.views} 阅读</span>
+          `;
+        }
+
+        if (tagsEl && article.tags) {
+          tagsEl.innerHTML = article.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
+        }
+
+        if (contentEl) {
+          contentEl.innerHTML = article.content;
+        }
+
+        // 生成上一篇/下一篇导航
+        await this.renderArticleNav(article);
+
+        // 重新初始化目录（内容是异步填充的）
+        TOC.init();
+      } catch (e) {
+        console.error('加载文章失败:', e);
       }
-
-      if (tagsEl && article.tags) {
-        tagsEl.innerHTML = article.tags.map(tag => `<span class="tag">${tag}</span>`).join('');
-      }
-
-      if (contentEl) {
-        contentEl.innerHTML = article.content;
-      }
-
-      // 生成上一篇/下一篇导航
-      this.renderArticleNav(article);
     },
 
     /**
      * 生成文章的上一篇/下一篇导航
      */
-    renderArticleNav(article) {
+    async renderArticleNav(article) {
       const navEl = document.getElementById('article-nav');
       if (!navEl) return;
 
-      const articles = getArticles();
-      const index = articles.findIndex(a => a.id === article.id);
-      const prev = index > 0 ? articles[index - 1] : null;
-      const next = index < articles.length - 1 ? articles[index + 1] : null;
+      try {
+        const articles = await ArticlesAPI.getPublished();
+        const index = articles.findIndex(a => a.id === article.id);
+        const prev = index > 0 ? articles[index - 1] : null;
+        const next = index < articles.length - 1 ? articles[index + 1] : null;
 
-      let html = '';
+        let html = '';
 
-      if (prev) {
-        html += `
-          <a href="article.html?id=${prev.id}" class="article-nav__item">
-            <p class="article-nav__label">&larr; 上一篇</p>
-            <p class="article-nav__title">${prev.title}</p>
-          </a>
-        `;
-      } else {
-        html += '<div class="article-nav__item" style="visibility:hidden;"></div>';
+        if (prev) {
+          html += `
+            <a href="article.html?id=${prev.id}" class="article-nav__item">
+              <p class="article-nav__label">&larr; 上一篇</p>
+              <p class="article-nav__title">${prev.title}</p>
+            </a>
+          `;
+        } else {
+          html += '<div class="article-nav__item" style="visibility:hidden;"></div>';
+        }
+
+        if (next) {
+          html += `
+            <a href="article.html?id=${next.id}" class="article-nav__item article-nav__item--next">
+              <p class="article-nav__label">下一篇 &rarr;</p>
+              <p class="article-nav__title">${next.title}</p>
+            </a>
+          `;
+        } else {
+          html += '<div class="article-nav__item article-nav__item--next" style="visibility:hidden;"></div>';
+        }
+
+        navEl.innerHTML = html;
+      } catch (e) {
+        console.error('加载导航失败:', e);
       }
-
-      if (next) {
-        html += `
-          <a href="article.html?id=${next.id}" class="article-nav__item article-nav__item--next">
-            <p class="article-nav__label">下一篇 &rarr;</p>
-            <p class="article-nav__title">${next.title}</p>
-          </a>
-        `;
-      } else {
-        html += '<div class="article-nav__item article-nav__item--next" style="visibility:hidden;"></div>';
-      }
-
-      navEl.innerHTML = html;
     },
 
     /**
@@ -462,12 +470,17 @@
 
   // ========== Blog Filter & Search ==========
   const BlogFilter = {
+    // 文章卡片异步生成后重新绑定过滤
+    rebind() {
+      this.cards = document.querySelectorAll('.blog-grid .card');
+    },
+
     init() {
       this.cards = document.querySelectorAll('.blog-grid .card');
       this.filterTags = document.querySelectorAll('.filter-tag');
       this.searchInput = document.querySelector('.search-box__input');
 
-      if (!this.cards.length) return;
+      if (!this.filterTags.length && !this.searchInput) return;
 
       this.filterTags.forEach(tag => {
         tag.addEventListener('click', () => this.filterBy(tag));
@@ -519,6 +532,9 @@
       const tocList = document.querySelector('.toc__list');
       const headings = document.querySelectorAll('.prose h2, .prose h3');
       if (!tocList || !headings.length) return;
+
+      // 清空已有目录，避免重复
+      tocList.innerHTML = '';
 
       this.links = [];
 
