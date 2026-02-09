@@ -729,7 +729,40 @@
     }
 
     // ===== 文章操作 =====
+    function hasUnsavedChanges() {
+      if (currentId === null) return false;
+      
+      const article = articles.find(a => a.id === currentId);
+      if (!article) return false;
+      
+      const currentTitle = document.getElementById('ed-title').value || '';
+      const currentContent = document.getElementById('ed-content').innerHTML || '';
+      const currentCategory = document.getElementById('ed-category').value || 'frontend';
+      const currentTags = document.getElementById('ed-tags').value || '';
+      const currentEmoji = document.getElementById('ed-emoji').value || '📝';
+      
+      const savedTitle = article.title || '';
+      const savedContent = article.content || '';
+      const savedCategory = article.category || 'frontend';
+      const savedTags = (article.tags || []).join(', ');
+      const savedEmoji = article.emoji || '📝';
+      
+      return currentTitle !== savedTitle || 
+             currentContent !== savedContent ||
+             currentCategory !== savedCategory ||
+             currentTags !== savedTags ||
+             currentEmoji !== savedEmoji;
+    }
+
     async function createNew() {
+      // Check for unsaved changes before creating new article
+      if (hasUnsavedChanges()) {
+        const shouldSave = confirm('当前文章有未保存的修改，是否保存？');
+        if (shouldSave) {
+          await saveArticle();
+        }
+      }
+      
       const newArticle = {
         title: '',
         category: 'frontend',
@@ -755,7 +788,15 @@
       }
     }
 
-    function selectArticle(id) {
+    async function selectArticle(id) {
+      // Check for unsaved changes before switching articles
+      if (hasUnsavedChanges()) {
+        const shouldSave = confirm('当前文章有未保存的修改，是否保存？');
+        if (shouldSave) {
+          await saveArticle();
+        }
+      }
+      
       const article = articles.find(a => a.id === id);
       if (!article) return;
       selectArticleData(article);
