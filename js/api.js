@@ -41,7 +41,7 @@ function formatViews(n) {
 const ArticlesAPI = {
   // 获取所有已发布文章（公开访问）
   async getPublished() {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('articles')
       .select('*')
       .eq('published', true)
@@ -52,7 +52,7 @@ const ArticlesAPI = {
 
   // 获取所有文章（管理员）
   async getAll() {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('articles')
       .select('*')
       .order('date', { ascending: false });
@@ -62,7 +62,7 @@ const ArticlesAPI = {
 
   // 获取单篇文章
   async getById(id) {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('articles')
       .select('*')
       .eq('id', id)
@@ -73,7 +73,7 @@ const ArticlesAPI = {
 
   // 创建文章
   async create(article) {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('articles')
       .insert([toDbRow(article)])
       .select()
@@ -84,7 +84,7 @@ const ArticlesAPI = {
 
   // 更新文章
   async update(id, article) {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('articles')
       .update(toDbRow(article))
       .eq('id', id)
@@ -96,7 +96,7 @@ const ArticlesAPI = {
 
   // 删除文章
   async delete(id) {
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from('articles')
       .delete()
       .eq('id', id);
@@ -105,7 +105,7 @@ const ArticlesAPI = {
 
   // 增加浏览量（通过 RPC 函数，无需登录）
   async incrementViews(id) {
-    const { error } = await supabase.rpc('increment_views', { article_id: id });
+    const { error } = await supabaseClient.rpc('increment_views', { article_id: id });
     if (error) console.warn('浏览量更新失败:', error.message);
   }
 };
@@ -132,12 +132,12 @@ function toDbRow(article) {
   return row;
 }
 
-// ========== 评论 ==========
+// ========== 评论 ========== 
 
 const CommentsAPI = {
   // 获取某篇文章的已审核评论（公开访问）
   async getApproved(articleId) {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('comments')
       .select('*')
       .eq('article_id', articleId)
@@ -149,7 +149,7 @@ const CommentsAPI = {
 
   // 获取所有评论（管理员）
   async getAll() {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('comments')
       .select('*, articles(title)')
       .order('created_at', { ascending: false });
@@ -159,9 +159,9 @@ const CommentsAPI = {
 
   // 提交评论（公开）
   async submit(articleId, authorName, authorEmail, content) {
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from('comments')
-      .insert([{
+      .insert([{ 
         article_id: articleId,
         author_name: authorName,
         author_email: authorEmail,
@@ -173,7 +173,7 @@ const CommentsAPI = {
 
   // 审核通过评论（管理员）
   async approve(id) {
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from('comments')
       .update({ approved: true })
       .eq('id', id);
@@ -182,7 +182,7 @@ const CommentsAPI = {
 
   // 删除评论（管理员）
   async delete(id) {
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from('comments')
       .delete()
       .eq('id', id);
@@ -190,12 +190,12 @@ const CommentsAPI = {
   }
 };
 
-// ========== 联系留言 ==========
+// ========== 联系留言 ========== 
 
 const ContactAPI = {
   // 提交联系表单（公开）
   async submit(name, email, subject, message) {
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from('contact_messages')
       .insert([{ name, email, subject, message }]);
     if (error) throw error;
@@ -203,7 +203,7 @@ const ContactAPI = {
 
   // 获取所有留言（管理员）
   async getAll() {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('contact_messages')
       .select('*')
       .order('created_at', { ascending: false });
@@ -213,7 +213,7 @@ const ContactAPI = {
 
   // 标记已读（管理员）
   async markRead(id) {
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from('contact_messages')
       .update({ read: true })
       .eq('id', id);
@@ -221,22 +221,22 @@ const ContactAPI = {
   }
 };
 
-// ========== 认证 ==========
+// ========== 认证 ========== 
 
 const AuthAPI = {
   async signIn(email, password) {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
     if (error) throw error;
     return data;
   },
 
   async signOut() {
-    const { error } = await supabase.auth.signOut();
+    const { error } = await supabaseClient.auth.signOut();
     if (error) throw error;
   },
 
   async getSession() {
-    const { data } = await supabase.auth.getSession();
+    const { data } = await supabaseClient.auth.getSession();
     return data.session;
   }
 };
